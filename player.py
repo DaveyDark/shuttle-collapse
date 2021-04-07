@@ -11,7 +11,7 @@ class Player:
     bullet_speed = 10
     bullet_time = 2
     jump_force = -1.75
-    speed = 1
+    speed = 0.75
     bullet_spread = 0.15
     firerate = 1/20
     mag_size = 3

@@ -4,8 +4,8 @@ class Boulder:
     images = []
     weight = 0.05
     maxHP = 70
-    hp = 80
-    speed = 0.1
+    hp = 150
+    speed = 0.2
     y_momentum = 0
     movement = [0,0]
     angle = 0
@@ -72,7 +72,7 @@ class Boulder:
         elif self.hp >= (self.maxHP/4):
             self.state = 3
 
-        self.angle += 1.5 *dt * -self.move_dir
+        self.angle += 2.25 *dt * -self.move_dir
         if(self.angle >= 360):
             self.angle = 360 - self.angle
         self.movement = [0,0]
@@ -82,9 +82,9 @@ class Boulder:
             self.y_momentum = 10
 
         if(self.move_dir < 0):
-            self.movement[0] += -self.speed * dt
+            self.movement[0] += -self.speed * dt * 2
         else :
-            self.movement[0] += self.speed * dt * 10
+            self.movement[0] += self.speed * dt * 4
         self.movement[1] += self.y_momentum
 
         self.translate(self.movement)

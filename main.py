@@ -1,11 +1,11 @@
-import pygame,sys,DarkEngine,time,math,random #modules
+import pygame,sys,DarkEngine,time,math,random,core #modules
 import player,backgroud,boulder #game files
 from pygame.locals import *
 from DarkEngine import *
 
 #---------------------------------------constants---------------------------------------
-#WINDOW_SIZE = (1280,720)
-WINDOW_SIZE = (960,540)
+WINDOW_SIZE = (1280,720)
+#WINDOW_SIZE = (960,540)
 #WINDOW_SIZE = (640,360)
 DISPLAY_SIZE = (640,360)
 
@@ -25,8 +25,9 @@ boulders = []
 bullets = []
 
 #---------------------------------------OBJECTS---------------------------------------
-player = player.Player([1060,270])
+player = player.Player([1060,700])
 bg = backgroud.Background(pygame.image.load('images/space.png'),0.1,[-600,-600],(2048,2048))
+core = core.Core([1010,655])
 spawn_locations = [(464,10),(920,10),(1185,10),(1650,10)]
 animation_database = {}
 animation_frames = {}
@@ -41,8 +42,10 @@ old_time = time.time()
 shooting = False
 scroll = [0,0]
 move = 0
-spawn_rate = [15,30]
+font = pygame.font.Font(None,32)
+spawn_rate = [20,40]
 spawn_timer = 0
+score = 0
 
 #---------------------------------------MORE INIT---------------------------------------
 tiles = render_map(game_map,display,tileset,[0,0],['1','2'])
@@ -94,10 +97,8 @@ while True:
         if event.type == MOUSEBUTTONDOWN:
             if event.button == 1:
                 shooting = True
-                print([pygame.mouse.get_pos()[0] - scroll[0],pygame.mouse.get_pos()[1] - scroll[1]])
             if event.button == 3:
                 player.change_mode()
-                print(player.mode)
         if event.type == MOUSEBUTTONUP:
             if event.button == 1:
                 shooting = False
@@ -113,12 +114,14 @@ while True:
     #---------------------------------------boulder spawning---------------------------------------
     if(spawn_timer >= 0):
         #spawn boulder
-        spawn_timer = -random.randrange(spawn_rate[0],spawn_rate[1])
+        spawn_timer = -random.randrange(int(spawn_rate[0]),int(spawn_rate[1]))
         spawn_loc = random.randrange(0,4)
         boulders.append(boulder.Boulder(spawn_locations[spawn_loc],1))
     spawn_timer += dt/60
 
     #---------------------------------------updates---------------------------------------
+    spawn_rate[0] -= dt/1600
+    spawn_rate[1] -= dt/1600
     new_bullets = []
     for bullet in bullets:
         if bullet.time > 0 and not bullet.destroy:
@@ -130,11 +133,15 @@ while True:
     for bder in boulders:
         if (bder.hp <= 0):
             bder = None
+            score += 100
         else :
             new_boulders.append(bder)
     boulders = new_boulders
-    
+    core.update(dt,boulders)
 
+    if core.hp <= 0:
+        #gameover
+        pass
     if(shooting):
         if player.can_shoot():
             bullets.append(player.shoot(scroll,display))
@@ -152,6 +159,7 @@ while True:
     #---------------------------------------rendering---------------------------------------
     bg.render(display,scroll)
     #render_map(game_map_bg,display,bg_tileset,scroll,[],16)
+    core.render(display,scroll)
     tiles = render_map(game_map,display,tileset,scroll,['1','2'])
     for bder in boulders:
         bder.render(display,scroll)
@@ -159,6 +167,8 @@ while True:
         bullet.render(display,scroll)
     player.set_tiles(tiles)
     player.render(display,scroll)
+    text = font.render("Score :" + str(score),True,(255,255,255))
     screen.blit(pygame.transform.scale(display,WINDOW_SIZE),(0,0))
+    screen.blit(text,(screen.get_width()/2 - 30,0))
     pygame.display.update()
     clock.tick(60)
