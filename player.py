@@ -10,7 +10,7 @@ class Player:
     bullet_damage = 1
     bullet_speed = 10
     bullet_time = 2
-    jump_force = -1.75
+    jump_force = -1.5
     speed = 0.75
     bullet_spread = 0.15
     firerate = 1/20
