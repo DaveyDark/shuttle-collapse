@@ -165,6 +165,7 @@ while True:
                         shooting = False
                         move = 0
                         spawn_rate = [20,40]
+                        player.died = False
                         spawn_timer = 0
                         score = 0
                         pygame.mixer.music.play(-1)
