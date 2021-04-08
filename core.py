@@ -1,7 +1,7 @@
 import pygame
 
 class Core:
-    hp = 100
+    hp = 50
 
     def __init__(self,pos):
         self.image = pygame.transform.scale(pygame.image.load('images/core.png'),(130,100))

@@ -24,6 +24,12 @@ bg_tileset = [pygame.image.load('images/spaceshipbg.png').convert()]
 boulders = []
 bullets = []
 
+title = pygame.transform.scale(pygame.image.load('images/title.png'),(700,350))
+play_button = pygame.image.load('images/play_button.png')
+quit_button = pygame.image.load('images/quit_button.png')
+play_rect = pygame.Rect(685,218,123,45)
+quit_rect = pygame.Rect(685,318,123,45)
+
 #---------------------------------------OBJECTS---------------------------------------
 player = player.Player([1060,700])
 bg = backgroud.Background(pygame.image.load('images/space.png'),0.1,[-600,-600],(2048,2048))
@@ -42,16 +48,23 @@ old_time = time.time()
 shooting = False
 scroll = [0,0]
 move = 0
-font = pygame.font.Font(None,32)
+font1 = pygame.font.Font('font/OZOBAROF PERSONAL USE.ttf',32)
+font2 = pygame.font.Font(None,42)
 spawn_rate = [20,40]
 spawn_timer = 0
 score = 0
 GAME_STATES = {'Menu' : 1,'Game' : 2}
 game_state = GAME_STATES['Menu']
+play = False
+quitt = False
 
 particles = []
 for x in range(80):
     particles.append([(random.randint(0,WINDOW_SIZE[0]),random.randint(0,WINDOW_SIZE[1])),random.randint(1,4),random.randint(10,40)/10])
+rocks = []
+rock_img = pygame.image.load('images/boulder_0.png')
+for x in range(40):
+    rocks.append([[random.randint(-1500,WINDOW_SIZE[0] - 500),random.randint(-1200,-100)],random.randint(20,30)/10,random.randint(32,64)])
 
 #---------------------------------------MORE INIT---------------------------------------
 tiles = render_map(game_map,display,tileset,[0,0],['1','2'])
@@ -62,19 +75,59 @@ for bder in boulders:
 #---------------------------------------GAME LOOP---------------------------------------
 while True:
     if game_state == GAME_STATES['Menu']:
-        screen.fill((0,0,40))
+        screen.fill((0,0,20))
 
         for particle in particles:
             particle[0] = (particle[0][0] + particle[2],particle[0][1])
             if(particle[0][0] >= WINDOW_SIZE[0] + particle[2]):
                 particle[0] = (0,random.randint(0,WINDOW_SIZE[1]))
             pygame.draw.circle(screen,(255,255,255),particle[0],particle[1])
+        for rock in rocks:
+            rock[0] = (rock[0][0] + rock[1],rock[0][1] + rock[1])
+            if(rock[0][1] >= WINDOW_SIZE[0] + rock[1]):
+                rock[0] = [random.randint(-1500,WINDOW_SIZE[0] - 500),random.randint(-1200,-100)]
+            screen.blit(pygame.transform.scale(rock_img,(rock[2],rock[2])),(rock[0][0],rock[0][1]))
+        mx,my = pygame.mouse.get_pos()
+        play = False
+        quitt = False
+        if play_rect.collidepoint(mx,my):
+            play = True
+            pygame.draw.rect(screen,(255,255,255),play_rect,2)
+        elif quit_rect.collidepoint(mx,my):
+            quitt = True
+            pygame.draw.rect(screen,(255,255,255),quit_rect,2)
+
+        screen.blit(title,(WINDOW_SIZE[0]/2 - 350,WINDOW_SIZE[1]/2 - 200 - 175))
+        screen.blit(play_button,(320,200))
+        screen.blit(quit_button,(320,300))
+        
 
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if(play):
+                        play = False
+                        player.set_pos([1060,700])
+                        scroll = [0,0]
+                        core.hp = 50
+                        boulders = []
+                        player_action = 'idle'
+                        player_frame = 0
+                        old_time = time.time()
+                        shooting = False
+                        move = 0
+                        spawn_rate = [20,40]
+                        spawn_timer = 0
+                        score = 0
+                        
+                        game_state = GAME_STATES['Game']
+                    if(quitt):
+                        quitt = False
+                        pygame.quit()
+                        sys.exit()
         pygame.display.update()
         clock.tick(60)
 
@@ -164,8 +217,7 @@ while True:
         core.update(dt,boulders)
 
         if core.hp <= 0:
-            #gameover
-            pass
+            game_state = ['Menu']
         if(shooting):
             if player.can_shoot():
                 bullets.append(player.shoot(scroll,display))
@@ -191,8 +243,10 @@ while True:
             bullet.render(display,scroll)
         player.set_tiles(tiles)
         player.render(display,scroll)
-        text = font.render("Score :" + str(score),True,(255,255,255))
+        text = font1.render("Score :",True,(255,255,255))
+        text2 = font2.render(str(score),True,(255,255,255))
         screen.blit(pygame.transform.scale(display,WINDOW_SIZE),(0,0))
-        screen.blit(text,(screen.get_width()/2 - 30,0))
+        screen.blit(text,(screen.get_width()/2 - 40,0))
+        screen.blit(text2,(screen.get_width()/2 + 50,0))
         pygame.display.update()
         clock.tick(60)
