@@ -1,9 +1,13 @@
 # shuttle-collapse
 My entry for the pygame community easter game jam. It's about saving your ship's core by destroying incoming debris. Made in pygame with all assets made by me. Completed in 4 days(7 days jam but I joined late). My first pygame game apart from a learner's project
 
-To play,dowload the windows executable package from dust/shuttle-cllapse-win.zip
-For other platforms,download source and execute "py main.py"
-Python install needed for this step
+
+
+-To play,dowload the windows executable package from dust/shuttle-cllapse-win.zip
+
+-For other platforms,download source and execute "py main.py"
+
+-Python install needed for this step
 
 Controls:
 
