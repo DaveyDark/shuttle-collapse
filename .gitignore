@@ -58,3 +58,7 @@ dist/win/sounds/hit.wav
 dist/win/sounds/Jump.wav
 dist/win/sounds/select.wav
 dist/win/sounds/shoot.wav
+build/main/gmain.exe.manifico
+build/main/main.exe.manifico
+.gitignore
+dist/shuttle-collapse-win.rar
