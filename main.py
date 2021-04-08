@@ -11,9 +11,22 @@ DISPLAY_SIZE = (640,360)
 
 #--------------------------------------PYGAME SETUP---------------------------------------
 pygame.init()
+pygame.mixer.init(44000,-16,2,1024)
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode(WINDOW_SIZE,0,32)
 display = pygame.Surface(DISPLAY_SIZE)
+
+#--------------------------------------SOUNDS---------------------------------------------
+sounds = {'shoot' : pygame.mixer.Sound('sounds/shoot.wav'),
+          'gameover' : pygame.mixer.Sound('sounds/gameover.wav'),
+          'buff' : pygame.mixer.Sound('sounds/buff.wav'),
+          'explosion' : pygame.mixer.Sound('sounds/explosion.wav'),
+          'destroy' : pygame.mixer.Sound('sounds/destroy.wav'),
+          'jump' : pygame.mixer.Sound('sounds/jump.wav'),
+          'hit' : pygame.mixer.Sound('sounds/hit.wav'),
+          'select' : pygame.mixer.Sound('sounds/select.wav'),
+          'click' : pygame.mixer.Sound('sounds/click.wav')}
+music = pygame.mixer.music.load('music/loop.wav')
 
 #--------------------------------------FILE LOADING---------------------------------------
 game_map = load_map('map/map1')
@@ -27,8 +40,10 @@ bullets = []
 title = pygame.transform.scale(pygame.image.load('images/title.png'),(700,350))
 play_button = pygame.image.load('images/play_button.png')
 quit_button = pygame.image.load('images/quit_button.png')
+help_button = pygame.image.load('images/help_button.png')
 play_rect = pygame.Rect(685,218,123,45)
 quit_rect = pygame.Rect(685,318,123,45)
+help_rect = pygame.Rect(685,418,123,45)
 
 #---------------------------------------OBJECTS---------------------------------------
 player = player.Player([1060,700])
@@ -50,6 +65,7 @@ scroll = [0,0]
 move = 0
 font1 = pygame.font.Font('font/OZOBAROF PERSONAL USE.ttf',32)
 font2 = pygame.font.Font(None,42)
+font3 = pygame.font.Font(None,16)
 spawn_rate = [20,40]
 spawn_timer = 0
 score = 0
@@ -57,7 +73,16 @@ GAME_STATES = {'Menu' : 1,'Game' : 2}
 game_state = GAME_STATES['Menu']
 play = False
 quitt = False
-
+tuto_text = ["W to jump,A and D to move",
+          "left click to shoot and right click to swtch firing mode",
+          "left click on left side to shoot left and vice versa",
+          "protect the ship core from falling boulder",
+          "full auto fire deals high damage up close",
+          "semi auto fire deals low damage close but very high damage at range",
+          "touching a boulder or letting 5 boulders hit the core will end the game"]
+score_text = ""
+gameover_text = ""
+show_tutorial = False
 particles = []
 for x in range(80):
     particles.append([(random.randint(0,WINDOW_SIZE[0]),random.randint(0,WINDOW_SIZE[1])),random.randint(1,4),random.randint(10,40)/10])
@@ -88,19 +113,38 @@ while True:
                 rock[0] = [random.randint(-1500,WINDOW_SIZE[0] - 500),random.randint(-1200,-100)]
             screen.blit(pygame.transform.scale(rock_img,(rock[2],rock[2])),(rock[0][0],rock[0][1]))
         mx,my = pygame.mouse.get_pos()
-        play = False
-        quitt = False
         if play_rect.collidepoint(mx,my):
+            if not play:
+                sounds['select'].play()
             play = True
             pygame.draw.rect(screen,(255,255,255),play_rect,2)
         elif quit_rect.collidepoint(mx,my):
+            if not quitt:
+                sounds['select'].play()
             quitt = True
             pygame.draw.rect(screen,(255,255,255),quit_rect,2)
+        elif help_rect.collidepoint(mx,my):
+            if not show_tutorial:
+                sounds['select'].play()
+            show_tutorial = True
+            pygame.draw.rect(screen,(255,255,255),help_rect,2)
+        else:
+            quitt = False
+            show_tutorial = False
+            play = False
 
+        go_txt = font2.render(gameover_text,True,(255,160,160))
+        sc_txt = font2.render(score_text,True,(255,255,255))
+        screen.blit(go_txt,(WINDOW_SIZE[0]/2 - 100,WINDOW_SIZE[1]/2 - 140))
+        screen.blit(sc_txt,(WINDOW_SIZE[0]/2 - 135,WINDOW_SIZE[1]/2 - 110))
         screen.blit(title,(WINDOW_SIZE[0]/2 - 350,WINDOW_SIZE[1]/2 - 200 - 175))
         screen.blit(play_button,(320,200))
         screen.blit(quit_button,(320,300))
-        
+        screen.blit(help_button,(320,400))
+        if(show_tutorial):
+            for index,txt in enumerate(tuto_text):
+                tutorial =  font3.render(tuto_text[index],True,(255,255,255))
+                screen.blit(tutorial,(0,400 + 20*index))
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -108,6 +152,7 @@ while True:
                 sys.exit()
             if event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    sounds['click'].play()
                     if(play):
                         play = False
                         player.set_pos([1060,700])
@@ -122,7 +167,7 @@ while True:
                         spawn_rate = [20,40]
                         spawn_timer = 0
                         score = 0
-                        
+                        pygame.mixer.music.play(-1)
                         game_state = GAME_STATES['Game']
                     if(quitt):
                         quitt = False
@@ -197,8 +242,8 @@ while True:
         spawn_timer += dt/60
 
     #---------------------------------------updates---------------------------------------
-        spawn_rate[0] -= dt/1600
-        spawn_rate[1] -= dt/1600
+        spawn_rate[0] -= dt/1000
+        spawn_rate[1] -= dt/1000
         new_bullets = []
         for bullet in bullets:
             if bullet.time > 0 and not bullet.destroy:
@@ -208,26 +253,34 @@ while True:
         bullets = new_bullets
         new_boulders = []
         for bder in boulders:
-            if (bder.hp <= 0):
+            if bder.hp <= -1000:
+                pass
+            elif (bder.hp <= 0):
                 bder = None
+                sounds['buff'].play()
+                sounds['destroy'].play()
                 score += 100
             else :
                 new_boulders.append(bder)
         boulders = new_boulders
-        core.update(dt,boulders)
-
-        if core.hp <= 0:
-            game_state = ['Menu']
+        core.update(dt,boulders,sounds['explosion'])
+        if core.hp <= 0 or player.died:
+            score_text = 'last score : ' + str(score)
+            gameover_text = "Game Over"
+            game_state = GAME_STATES['Menu']
+            pygame.mixer.music.stop()
+            print('done')
+            continue
         if(shooting):
             if player.can_shoot():
-                bullets.append(player.shoot(scroll,display))
+                bullets.append(player.shoot(scroll,display,sounds['shoot']))
         if move > 0:
             player.translate([player.speed*dt*1.5,0])
         elif move < 0:
             player.translate([-player.speed*dt,0])
-        player.update(dt)
+        player.update(dt,sounds['jump'],boulders)
         for blt in bullets:
-            blt.update(dt,boulders,tiles)
+            blt.update(dt,boulders,tiles,sounds['hit'])
         for bder in boulders:
             bder.set_tiles(tiles)
             bder.update(dt)

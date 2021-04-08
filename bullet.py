@@ -17,7 +17,7 @@ class Bullet:
         self.speed = speed * dir
         self.time = time
 
-    def update(self,dt,boulders,tiles):
+    def update(self,dt,boulders,tiles,sound):
         self.time -= dt/60
         self.rect.x += self.speed
         self.rect.y += self.spread*self.speed
@@ -25,6 +25,7 @@ class Bullet:
             if(self.rect.colliderect(boulder.rect)):
                 self.dist = self.origin[0] - self.pos[0]
                 self.damage_multiplier = 1
+                sound.play()
                 if(self.mode == 0):
                     #more damage up close
                     self.damage_multiplier = abs((140 - self.dist)/140)

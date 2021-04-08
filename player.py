@@ -7,6 +7,7 @@ class Player:
     jumping = False
     tiles = []
     mode = 0
+    died = False
     bullet_damage = 1
     bullet_speed = 10
     bullet_time = 2
@@ -50,7 +51,7 @@ class Player:
             self.mag_size = 30
             self.bullet_spread = 0.25
             self.mag_bullets = 30
-            self.bullet_damage = 2
+            self.bullet_damage = 2.5
             self.bullet_time = 0.5
             self.bullet_speed = 10
             self.firerate = 1/10
@@ -106,13 +107,17 @@ class Player:
     def flip(self,flipp):
         self.flipped = flipp
 
-    def update(self,dt):
+    def update(self,dt,jump_sound,boulders):
         self.timer += dt/60
+        for bder in boulders:
+            if self.rect.colliderect(bder.rect):
+                self.died = True
         self.air_timer -= 0.25*dt
         self.movement = [0,0]
         if self.jumping:
             if self.air_timer >= 0:
                 self.y_momentum += self.jump_force
+                jump_sound.play()
             self.jumping = False
         self.y_momentum += self.weight
         if self.y_momentum > 300:
@@ -127,7 +132,7 @@ class Player:
             self.y_momentum = 0
 
 
-    def shoot(self,scroll,display):
+    def shoot(self,scroll,display,sound):
         if self.timer < 0:
             return
         self.mx,self.my = pygame.mouse.get_pos()
@@ -141,6 +146,7 @@ class Player:
         else:
             blt = bullet.Bullet([self.pos[0] + 5,self.pos[1] + 12],-1,self.bullet_damage,self.bullet_speed,self.bullet_time,self.bullet_spread,self.mode)
         self.timer = -self.firerate
+        sound.play()
         if self.mag_bullets <= 0:
             self.timer -= self.firerate*self.reload_time
             self.mag_bullets = self.mag_size

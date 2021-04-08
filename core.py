@@ -8,12 +8,13 @@ class Core:
         self.pos = pos
         self.rect = pygame.Rect(pos[0]+ 25,pos[1] + 40,self.image.get_width()-45,self.image.get_height()-22)
 
-    def update(self,dt,boulders):
+    def update(self,dt,boulders,sound):
         for boulder in boulders:
             if self.rect.colliderect(boulder.rect):
                 self.hp -= 10
+                sound.play()
                 print(self.hp)
-                boulder.hp = 0
+                boulder.hp = -1000
 
     def render(self,display,scroll):
         display.blit(self.image,(self.pos[0] - scroll[0],self.pos[1] - scroll[1]))
