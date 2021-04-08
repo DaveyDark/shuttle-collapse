@@ -4,7 +4,7 @@ class Boulder:
     images = []
     weight = 0.05
     maxHP = 70
-    hp = 150
+    hp = 100
     speed = 0.2
     y_momentum = 0
     movement = [0,0]

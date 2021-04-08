@@ -37,7 +37,7 @@ class Player:
             #switch to burst
             self.mag_size = 3
             self.mag_bullets = 3
-            self.bullet_damage = 2
+            self.bullet_damage = 5
             self.bullet_time = 2
             self.bullet_speed = 18
             self.firerate = 1/20
@@ -137,9 +137,9 @@ class Player:
         else:
             self.flipped = True
         if not self.flipped:
-            blt = bullet.Bullet([self.pos[0] + 28,self.pos[1] + 12],1,self.bullet_damage,self.bullet_speed,self.bullet_time,self.bullet_spread)
+            blt = bullet.Bullet([self.pos[0] + 28,self.pos[1] + 12],1,self.bullet_damage,self.bullet_speed,self.bullet_time,self.bullet_spread,self.mode)
         else:
-            blt = bullet.Bullet([self.pos[0] + 5,self.pos[1] + 12],-1,self.bullet_damage,self.bullet_speed,self.bullet_time,self.bullet_spread)
+            blt = bullet.Bullet([self.pos[0] + 5,self.pos[1] + 12],-1,self.bullet_damage,self.bullet_speed,self.bullet_time,self.bullet_spread,self.mode)
         self.timer = -self.firerate
         if self.mag_bullets <= 0:
             self.timer -= self.firerate*self.reload_time

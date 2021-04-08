@@ -4,8 +4,8 @@ from pygame.locals import *
 from DarkEngine import *
 
 #---------------------------------------constants---------------------------------------
-WINDOW_SIZE = (1280,720)
-#WINDOW_SIZE = (960,540)
+#WINDOW_SIZE = (1280,720)
+WINDOW_SIZE = (960,540)
 #WINDOW_SIZE = (640,360)
 DISPLAY_SIZE = (640,360)
 
@@ -46,6 +46,12 @@ font = pygame.font.Font(None,32)
 spawn_rate = [20,40]
 spawn_timer = 0
 score = 0
+GAME_STATES = {'Menu' : 1,'Game' : 2}
+game_state = GAME_STATES['Menu']
+
+particles = []
+for x in range(80):
+    particles.append([(random.randint(0,WINDOW_SIZE[0]),random.randint(0,WINDOW_SIZE[1])),random.randint(1,4),random.randint(10,40)/10])
 
 #---------------------------------------MORE INIT---------------------------------------
 tiles = render_map(game_map,display,tileset,[0,0],['1','2'])
@@ -55,120 +61,138 @@ for bder in boulders:
 
 #---------------------------------------GAME LOOP---------------------------------------
 while True:
-    display.fill((30,30,30))
-    dt,old_time = calc_dt(old_time)
+    if game_state == GAME_STATES['Menu']:
+        screen.fill((0,0,40))
+
+        for particle in particles:
+            particle[0] = (particle[0][0] + particle[2],particle[0][1])
+            if(particle[0][0] >= WINDOW_SIZE[0] + particle[2]):
+                particle[0] = (0,random.randint(0,WINDOW_SIZE[1]))
+            pygame.draw.circle(screen,(255,255,255),particle[0],particle[1])
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+
+        pygame.display.update()
+        clock.tick(60)
+
+    if game_state == GAME_STATES['Game']:
+        display.fill((30,30,30))
+        dt,old_time = calc_dt(old_time)
 
     #---------------------------------------scrolling---------------------------------------
-    true_scroll = scroll.copy()
-    true_scroll[0] += (player.pos[0] - true_scroll[0] - (display.get_width()/2) - (player.image.get_width()/2))/15
-    true_scroll[1] += (player.pos[1] - true_scroll[1] - (display.get_height()/2) - (player.image.get_height()/2))/15
-    scroll = true_scroll.copy()
-    scroll[0] = int(scroll[0])
-    scroll[1] = int(scroll[1])
+        true_scroll = scroll.copy()
+        true_scroll[0] += (player.pos[0] - true_scroll[0] - (display.get_width()/2) - (player.image.get_width()/2))/15
+        true_scroll[1] += (player.pos[1] - true_scroll[1] - (display.get_height()/2) - (player.image.get_height()/2))/15
+        scroll = true_scroll.copy()
+        scroll[0] = int(scroll[0])
+        scroll[1] = int(scroll[1])
 
     #---------------------------------------animation handling---------------------------------------
-    player_image_id = animation_database[player_action][int(player_frame)]
-    player.image = animation_frames[player_image_id]
-    player_frame += dt
-    if player_frame >= len(animation_database[player_action]):
-        player_frame = 0
+        player_image_id = animation_database[player_action][int(player_frame)]
+        player.image = animation_frames[player_image_id]
+        player_frame += dt
+        if player_frame >= len(animation_database[player_action]):
+            player_frame = 0
 
     #---------------------------------------event handling---------------------------------------
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == KEYDOWN:
-            if event.key == K_d:
-                player.flip(False)
-                move = 1
-            if event.key == K_a:
-                player.flip(True)
-                move = -1
-            if event.key == K_w:
-                player.jump()
-        if event.type == KEYUP:
-            if event.key == K_d:
-                if move == 1:
-                    move = 0
-            if event.key == K_a:
-                if move == -1:
-                    move = 0
-        if event.type == MOUSEBUTTONDOWN:
-            if event.button == 1:
-                shooting = True
-            if event.button == 3:
-                player.change_mode()
-        if event.type == MOUSEBUTTONUP:
-            if event.button == 1:
-                shooting = False
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_d:
+                    player.flip(False)
+                    move = 1
+                if event.key == K_a:
+                    player.flip(True)
+                    move = -1
+                if event.key == K_w:
+                    player.jump()
+            if event.type == KEYUP:
+                if event.key == K_d:
+                    if move == 1:
+                        move = 0
+                if event.key == K_a:
+                    if move == -1:
+                        move = 0
+            if event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    shooting = True
+                if event.button == 3:
+                    player.change_mode()
+            if event.type == MOUSEBUTTONUP:
+                if event.button == 1:
+                    shooting = False
 
-    if(move != 0):
-        player_action,player_frame = change_action(player_action,player_frame,'walk')
-    else :
-        player_action,player_frame = change_action(player_action,player_frame,'idle')
+        if(move != 0):
+            player_action,player_frame = change_action(player_action,player_frame,'walk')
+        else :
+            player_action,player_frame = change_action(player_action,player_frame,'idle')
 
-    if int(player.y_momentum) != 0:
-        player_action,player_frame = change_action(player_action,player_frame,'jump')
+        if int(player.y_momentum) != 0:
+            player_action,player_frame = change_action(player_action,player_frame,'jump')
 
     #---------------------------------------boulder spawning---------------------------------------
-    if(spawn_timer >= 0):
-        #spawn boulder
-        spawn_timer = -random.randrange(int(spawn_rate[0]),int(spawn_rate[1]))
-        spawn_loc = random.randrange(0,4)
-        boulders.append(boulder.Boulder(spawn_locations[spawn_loc],1))
-    spawn_timer += dt/60
+        if(spawn_timer >= 0):
+            #spawn boulder
+            spawn_timer = -random.randrange(int(spawn_rate[0]),int(spawn_rate[1]))
+            spawn_loc = random.randrange(0,4)
+            boulders.append(boulder.Boulder(spawn_locations[spawn_loc],1))
+        spawn_timer += dt/60
 
     #---------------------------------------updates---------------------------------------
-    spawn_rate[0] -= dt/1600
-    spawn_rate[1] -= dt/1600
-    new_bullets = []
-    for bullet in bullets:
-        if bullet.time > 0 and not bullet.destroy:
-            new_bullets.append(bullet)
-        else:
-            bullet = None
-    bullets = new_bullets
-    new_boulders = []
-    for bder in boulders:
-        if (bder.hp <= 0):
-            bder = None
-            score += 100
-        else :
-            new_boulders.append(bder)
-    boulders = new_boulders
-    core.update(dt,boulders)
+        spawn_rate[0] -= dt/1600
+        spawn_rate[1] -= dt/1600
+        new_bullets = []
+        for bullet in bullets:
+            if bullet.time > 0 and not bullet.destroy:
+                new_bullets.append(bullet)
+            else:
+                bullet = None
+        bullets = new_bullets
+        new_boulders = []
+        for bder in boulders:
+            if (bder.hp <= 0):
+                bder = None
+                score += 100
+            else :
+                new_boulders.append(bder)
+        boulders = new_boulders
+        core.update(dt,boulders)
 
-    if core.hp <= 0:
-        #gameover
-        pass
-    if(shooting):
-        if player.can_shoot():
-            bullets.append(player.shoot(scroll,display))
-    if move > 0:
-        player.translate([player.speed*dt*1.5,0])
-    elif move < 0:
-        player.translate([-player.speed*dt,0])
-    player.update(dt)
-    for blt in bullets:
-        blt.update(dt,boulders,tiles)
-    for bder in boulders:
-        bder.set_tiles(tiles)
-        bder.update(dt)
+        if core.hp <= 0:
+            #gameover
+            pass
+        if(shooting):
+            if player.can_shoot():
+                bullets.append(player.shoot(scroll,display))
+        if move > 0:
+            player.translate([player.speed*dt*1.5,0])
+        elif move < 0:
+            player.translate([-player.speed*dt,0])
+        player.update(dt)
+        for blt in bullets:
+            blt.update(dt,boulders,tiles)
+        for bder in boulders:
+            bder.set_tiles(tiles)
+            bder.update(dt)
 
     #---------------------------------------rendering---------------------------------------
-    bg.render(display,scroll)
-    #render_map(game_map_bg,display,bg_tileset,scroll,[],16)
-    core.render(display,scroll)
-    tiles = render_map(game_map,display,tileset,scroll,['1','2'])
-    for bder in boulders:
-        bder.render(display,scroll)
-    for bullet in bullets:
-        bullet.render(display,scroll)
-    player.set_tiles(tiles)
-    player.render(display,scroll)
-    text = font.render("Score :" + str(score),True,(255,255,255))
-    screen.blit(pygame.transform.scale(display,WINDOW_SIZE),(0,0))
-    screen.blit(text,(screen.get_width()/2 - 30,0))
-    pygame.display.update()
-    clock.tick(60)
+        bg.render(display,scroll)
+        #render_map(game_map_bg,display,bg_tileset,scroll,[],16)
+        core.render(display,scroll)
+        tiles = render_map(game_map,display,tileset,scroll,['1','2'])
+        for bder in boulders:
+            bder.render(display,scroll)
+        for bullet in bullets:
+            bullet.render(display,scroll)
+        player.set_tiles(tiles)
+        player.render(display,scroll)
+        text = font.render("Score :" + str(score),True,(255,255,255))
+        screen.blit(pygame.transform.scale(display,WINDOW_SIZE),(0,0))
+        screen.blit(text,(screen.get_width()/2 - 30,0))
+        pygame.display.update()
+        clock.tick(60)
