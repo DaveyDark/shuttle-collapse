@@ -164,6 +164,7 @@ while True:
                         old_time = time.time()
                         shooting = False
                         move = 0
+                        player.died = False
                         spawn_rate = [20,40]
                         player.died = False
                         spawn_timer = 0
