@@ -11,8 +11,8 @@ class Player:
     bullet_damage = 1
     bullet_speed = 10
     bullet_time = 2
-    jump_force = -1.5
-    speed = 0.75
+    jump_force = -3
+    speed = 1.5
     bullet_spread = 0.15
     firerate = 1/20
     mag_size = 3
@@ -20,7 +20,7 @@ class Player:
     timer = 0
     movement = [0,0]
     y_momentum = 0
-    weight = 0.025
+    weight = 0.05
     reload_time = 6
     air_timer = 0
     flipped = False
@@ -38,7 +38,7 @@ class Player:
             #switch to burst
             self.mag_size = 3
             self.mag_bullets = 3
-            self.bullet_damage = 5
+            self.bullet_damage = 7.5
             self.bullet_time = 2
             self.bullet_speed = 18
             self.firerate = 1/20
@@ -50,8 +50,8 @@ class Player:
             #switch to full auto
             self.mag_size = 30
             self.bullet_spread = 0.25
-            self.mag_bullets = 30
-            self.bullet_damage = 2.5
+            self.mag_bullets = 40
+            self.bullet_damage = 4
             self.bullet_time = 0.5
             self.bullet_speed = 10
             self.firerate = 1/10
@@ -126,7 +126,7 @@ class Player:
         self.movement[1] += self.y_momentum*dt
         self.translate(self.movement)
         if self.collisions['bottom']:
-            self.air_timer = 5*dt
+            self.air_timer = 10*dt
             self.y_momentum = 0
         if self.collisions['top']:
             self.y_momentum = 0

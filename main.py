@@ -4,10 +4,11 @@ from pygame.locals import *
 from DarkEngine import *
 
 #---------------------------------------constants---------------------------------------
+WINDOW_SIZE = (1920,1080)
 #WINDOW_SIZE = (1280,720)
-WINDOW_SIZE = (960,540)
+#WINDOW_SIZE = (960,540)
 #WINDOW_SIZE = (640,360)
-DISPLAY_SIZE = (640,360)
+DISPLAY_SIZE = (1280,720)
 
 #--------------------------------------PYGAME SETUP---------------------------------------
 pygame.init()
@@ -37,13 +38,13 @@ bg_tileset = [pygame.image.load('images/spaceshipbg.png').convert()]
 boulders = []
 bullets = []
 
-title = pygame.transform.scale(pygame.image.load('images/title.png'),(700,350))
+title = pygame.transform.scale(pygame.image.load('images/title.png'),(1400,700))
 play_button = pygame.image.load('images/play_button.png')
 quit_button = pygame.image.load('images/quit_button.png')
 help_button = pygame.image.load('images/help_button.png')
-play_rect = pygame.Rect(685,218,123,45)
-quit_rect = pygame.Rect(685,318,123,45)
-help_rect = pygame.Rect(685,418,123,45)
+play_rect = pygame.Rect(WINDOW_SIZE[0] - 135,WINDOW_SIZE[1] - 880,123,45)
+quit_rect = pygame.Rect(WINDOW_SIZE[0] - 135,WINDOW_SIZE[1] - 280,123,45)
+help_rect = pygame.Rect(WINDOW_SIZE[0] - 135,WINDOW_SIZE[1] - 580,123,45)
 
 #---------------------------------------OBJECTS---------------------------------------
 player = player.Player([1060,700])
@@ -64,9 +65,9 @@ shooting = False
 scroll = [0,0]
 move = 0
 font1 = pygame.font.Font('font/OZOBAROF PERSONAL USE.ttf',32)
-font2 = pygame.font.Font(None,42)
-font3 = pygame.font.Font(None,16)
-spawn_rate = [20,40]
+font2 = pygame.font.Font(None,56)
+font3 = pygame.font.Font(None,42)
+spawn_rate = [5,7]
 spawn_timer = 0
 score = 0
 GAME_STATES = {'Menu' : 1,'Game' : 2}
@@ -135,16 +136,16 @@ while True:
 
         go_txt = font2.render(gameover_text,True,(255,160,160))
         sc_txt = font2.render(score_text,True,(255,255,255))
-        screen.blit(go_txt,(WINDOW_SIZE[0]/2 - 100,WINDOW_SIZE[1]/2 - 140))
-        screen.blit(sc_txt,(WINDOW_SIZE[0]/2 - 135,WINDOW_SIZE[1]/2 - 110))
-        screen.blit(title,(WINDOW_SIZE[0]/2 - 350,WINDOW_SIZE[1]/2 - 200 - 175))
-        screen.blit(play_button,(320,200))
-        screen.blit(quit_button,(320,300))
-        screen.blit(help_button,(320,400))
+        screen.blit(go_txt,(WINDOW_SIZE[0]/2 - 100,WINDOW_SIZE[1]/2))
+        screen.blit(sc_txt,(WINDOW_SIZE[0]/2 - 115,WINDOW_SIZE[1]/2 + 50))
+        screen.blit(title,(WINDOW_SIZE[0]/2 - 700,WINDOW_SIZE[1]/2 - 400 - 175))
+        screen.blit(play_button,(WINDOW_SIZE[0] - 500,WINDOW_SIZE[1]- 900))
+        screen.blit(quit_button,(WINDOW_SIZE[0] - 500,WINDOW_SIZE[1] - 300))
+        screen.blit(help_button,(WINDOW_SIZE[0] - 500,WINDOW_SIZE[1] - 600))
         if(show_tutorial):
             for index,txt in enumerate(tuto_text):
                 tutorial =  font3.render(tuto_text[index],True,(255,255,255))
-                screen.blit(tutorial,(0,400 + 20*index))
+                screen.blit(tutorial,(0,700 + 40*index))
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -165,7 +166,7 @@ while True:
                         shooting = False
                         move = 0
                         player.died = False
-                        spawn_rate = [20,40]
+                        spawn_rate = [10,15]
                         player.died = False
                         spawn_timer = 0
                         score = 0
@@ -227,7 +228,7 @@ while True:
                 if event.button == 1:
                     shooting = False
 
-        if(move != 0):
+        if(move >= 0.5 or move <= -0.5):
             player_action,player_frame = change_action(player_action,player_frame,'walk')
         else :
             player_action,player_frame = change_action(player_action,player_frame,'idle')

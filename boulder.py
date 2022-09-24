@@ -5,7 +5,7 @@ class Boulder:
     weight = 0.05
     maxHP = 70
     hp = 80
-    speed = 0.2
+    speed = 0.3
     y_momentum = 0
     movement = [0,0]
     angle = 0
